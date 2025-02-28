@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useRef, useState } from "react";
 
 const ImageUpload = () => {
   const [images, setImages] = useState([]);
@@ -18,9 +18,12 @@ const ImageUpload = () => {
       name: file.name,
       url: URL.createObjectURL(file),
     }));
-
+    localStorage.setItem("imageForPersistance", JSON.stringify(imageUrls));
     setImages(imageUrls);
   };
+
+  // const myRef = useRef();
+  // console.log(images);
 
   const handleCheckboxChange = (image) => {
     setSelectedImages((prev) =>
@@ -28,25 +31,41 @@ const ImageUpload = () => {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     setImages((prev) =>
       prev.filter((image) => !selectedImages.includes(image))
     );
     setRemovedImages((prev) => [...prev, ...selectedImages]);
     setSelectedImages([]);
-    if (removedImages.length <= 0 || radioValue == "") {
+    if (removedImages.length <= 0 && radioValue == "") {
       alert("Please Select at least 1 image");
       return;
     }
+
     const updatedArray = arrayOfNumbers.filter(
       (_, index) => indexForRadio !== index
     );
+
     setArrayOfNumbers(updatedArray);
   };
 
   const handleChangeRadio = (e, index) => {
+    e.preventDefault();
     setRadioValue(e.target.value);
     setIndexForRadio(index);
+    //setSelectedRadio(index);
+  };
+
+  const handleReset = () => {
+    const imageForPersistance = JSON.parse(
+      localStorage.getItem("imageForPersistance")
+    );
+    setImages(imageForPersistance);
+    setRemovedImages([]);
+    setArrayOfNumbers(Array.from({ length: 10 }, (_, index) => index + 1));
+    setRadioValue("");
+    setIndexForRadio("");
   };
 
   return (
@@ -114,9 +133,11 @@ const ImageUpload = () => {
                 <div key={i} style={{ paddingLeft: "20px" }}>
                   <input
                     type="radio"
-                    name="number"
+                    //checked={el}
                     value={el}
-                    onChange={(e) => handleChangeRadio(e, i)}
+                    onChange={(e) => {
+                      handleChangeRadio(e, i);
+                    }}
                   />
                   {el}
                 </div>
@@ -166,6 +187,10 @@ const ImageUpload = () => {
             ))}
           </ul>
         </div>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <button onClick={handleReset}>Reset</button>
       </div>
     </div>
   );
